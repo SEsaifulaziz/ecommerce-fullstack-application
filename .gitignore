@@ -1,0 +1,14 @@
+# Frontend ignores
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# Backend ignores
+backend/target/
+backend/.mvn/
+backend/.idea/
+backend/HELP.md
+
+# System files
+.DS_Store
+Thumbs.db

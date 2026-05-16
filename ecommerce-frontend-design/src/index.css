@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-inter bg-shade text-dark;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-[1180px] mx-auto px-4;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors;
+  }
+  
+  .card {
+    @apply bg-white border border-shade-border rounded-md overflow-hidden;
+  }
+}
