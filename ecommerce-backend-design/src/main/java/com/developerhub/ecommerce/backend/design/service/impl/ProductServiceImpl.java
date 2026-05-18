@@ -5,6 +5,8 @@ import com.developerhub.ecommerce.backend.design.repository.ProductRepository;
 import com.developerhub.ecommerce.backend.design.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,4 +38,12 @@ public class ProductServiceImpl implements ProductService {
         }
         return product;
     }
+
+    @Override
+    public Page<Product> findAll(Pageable pageable) {
+        Page<Product> products = productRepo.findAll(pageable);
+        return products;
+    }
+
+
 }
