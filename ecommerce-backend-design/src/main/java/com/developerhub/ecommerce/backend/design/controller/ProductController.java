@@ -20,4 +20,11 @@ public class ProductController {
         Product savedProduct = productService.save(product);
         return ResponseEntity.ok().body(savedProduct);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        Product getById = productService.getById(id);
+        return ResponseEntity.ok().body(getById);
+
+    }
 }
