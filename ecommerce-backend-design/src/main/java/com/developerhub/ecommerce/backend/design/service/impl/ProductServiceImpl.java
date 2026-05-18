@@ -3,6 +3,7 @@ package com.developerhub.ecommerce.backend.design.service.impl;
 import com.developerhub.ecommerce.backend.design.model.Product;
 import com.developerhub.ecommerce.backend.design.repository.ProductRepository;
 import com.developerhub.ecommerce.backend.design.service.ProductService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +26,14 @@ public class ProductServiceImpl implements ProductService {
        savedProduct.setImage(product.getImage());
 
        return productRepo.save(savedProduct);
+    }
+
+    @Override
+    public Product getById(Long id) {
+        Product product = productRepo.findById(id).orElse(null);
+        if(product == null){
+            throw new EntityNotFoundException("Product not found");
+        }
+        return product;
     }
 }
