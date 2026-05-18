@@ -4,6 +4,9 @@ package com.developerhub.ecommerce.backend.design.controller;
 import com.developerhub.ecommerce.backend.design.model.Product;
 import com.developerhub.ecommerce.backend.design.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +28,14 @@ public class ProductController {
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         Product getById = productService.getById(id);
         return ResponseEntity.ok().body(getById);
+    }
 
+    @GetMapping()
+    public ResponseEntity<Page<Product>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(productService.findAll(pageable));
     }
 }
