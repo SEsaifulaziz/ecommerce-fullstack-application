@@ -7,4 +7,5 @@ import com.developerhub.ecommerce.backend.design.model.Product;
 public interface ProductService {
     Product save(Product product);
 
+    Product getById(Long id);
 }
