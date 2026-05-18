@@ -1,4 +1,4 @@
-package com.devsaif.ecommerce.backend.design;
+package com.developerhub.ecommerce.backend.design;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

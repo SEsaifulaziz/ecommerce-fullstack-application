@@ -1,4 +1,4 @@
-package com.devsaif.ecommerce.backend.design.controller.model;
+package com.developerhub.ecommerce.backend.design.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
