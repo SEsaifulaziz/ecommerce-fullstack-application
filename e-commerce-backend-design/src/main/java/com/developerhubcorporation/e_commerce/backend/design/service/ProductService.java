@@ -10,4 +10,6 @@ public interface ProductService {
     Product getById(Long id);
 
     Page<Product> findAll(Pageable pageable);
+
+    Page<Product> getFilteredProducts(String search, String category, int page, int size);
 }
