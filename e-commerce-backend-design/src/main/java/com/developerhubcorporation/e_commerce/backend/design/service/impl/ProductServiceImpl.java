@@ -6,6 +6,7 @@ import com.developerhubcorporation.e_commerce.backend.design.service.ProductServ
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,19 +15,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepo;
 
     @Override
-    @Transactional
+    @Transactional // manages database transaction boundaries for writes
     public Product save(Product product) {
+        log.info("Saving new product to database: {}",  product.getName());
 
-        Product saved = productRepo.save(product);
-        return productRepo.save(saved);
+        return productRepo.save(product);
     }
 
     @Override
+
     public Product getById(Long id) {
         Product product = productRepo.findById(id).orElse(null);
         if(product == null){
