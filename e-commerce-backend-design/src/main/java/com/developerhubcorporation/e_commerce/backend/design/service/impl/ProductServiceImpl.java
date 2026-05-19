@@ -4,6 +4,7 @@ import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import com.developerhubcorporation.e_commerce.backend.design.repository.ProductRepository;
 import com.developerhubcorporation.e_commerce.backend.design.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,18 +19,11 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepo;
 
     @Override
+    @Transactional
     public Product save(Product product) {
 
-        Product savedProduct = new Product();
-
-        savedProduct.setName(product.getName());
-        savedProduct.setCategory(product.getCategory());
-        savedProduct.setDescription(product.getDescription());
-        savedProduct.setPrice(product.getPrice());
-        savedProduct.setStock(product.getStock());
-        savedProduct.setImage(product.getImage());
-
-        return productRepo.save(savedProduct);
+        Product saved = productRepo.save(product);
+        return productRepo.save(saved);
     }
 
     @Override
