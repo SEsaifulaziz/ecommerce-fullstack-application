@@ -39,4 +39,15 @@ public class ProductController {
         return ResponseEntity.ok(productService.findAll(pageable));
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<Page<Product>> getFilteredProducts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false, defaultValue = "0")  int page,
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
+        Page<Product> FilteredProducts = productService.getFilteredProducts(search, category, page, size);
+        return ResponseEntity.ok().body(FilteredProducts);
+    }
+
 }
