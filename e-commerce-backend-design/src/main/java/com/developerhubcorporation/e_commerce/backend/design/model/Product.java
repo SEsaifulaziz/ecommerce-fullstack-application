@@ -26,7 +26,7 @@ public class Product {
 
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Price cannot be less then 0.0")
-    @Column(nullable = false, precision = 10, scale = 2) // Use double or BigDecimal with explicit scale matching
+    @Column(nullable = false) // Use double or BigDecimal with explicit scale matching
     private Double price;
 
     @NotNull(message = "Price is required")
