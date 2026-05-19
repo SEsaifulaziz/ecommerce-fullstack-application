@@ -6,6 +6,7 @@ import com.developerhubcorporation.e_commerce.backend.design.service.ProductServ
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -43,5 +44,29 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<Product> findAll(Pageable pageable) {
         return productRepo.findAll(pageable);
+    }
+
+    @Override
+    public Page<Product> getFilteredProducts(String search, String category, int page, int size) {
+        Pageable  pageable = PageRequest.of(page, size);
+
+        // Check if search and category inputs actually have text
+        boolean hasSearch = (search != null  && !search.trim().isEmpty());
+        boolean hasCategory = (category != null && !category.trim().isEmpty());
+
+        if (hasSearch &&  hasCategory){
+            return productRepo.findByNameContainingIgnoreCaseAndCategoryContainingIgnoreCase(search, category, pageable);
+        }
+
+        else if (hasSearch){
+            return productRepo.findByNameContainingIgnoreCase(search, pageable);
+        }
+
+        else if (hasCategory){
+            return  productRepo.findByCategoryContainingIgnoreCase(category, pageable);
+        }
+        else{
+            return productRepo.findAll(pageable);
+        }
     }
 }
