@@ -3,19 +3,23 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Annotation profile for ecommerce-backend-design" enabled="true">
+      <profile name="Annotation profile for e-commerce-backend-design" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
         </processorPath>
-        <module name="ecommerce-backend-design" />
+        <module name="e-commerce-backend-design" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ecommerce-backend-design" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="e-commerce-backend-design" options="-parameters" />
       <module name="ecommerce-backend-design" options="-parameters" />
     </option>
   </component>
