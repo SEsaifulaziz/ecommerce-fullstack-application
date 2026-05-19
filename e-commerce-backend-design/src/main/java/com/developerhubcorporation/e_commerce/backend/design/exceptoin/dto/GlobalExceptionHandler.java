@@ -25,5 +25,17 @@ public class GlobalExceptionHandler {
           return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
+    // Global Catch-All: Catches any unexpected code crashes (e.g., NullPointer, Database down)
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDetails> handleException(
+            Exception exception, WebRequest webRequest) {
 
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                exception.getMessage(),
+                webRequest.getDescription(false)
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
