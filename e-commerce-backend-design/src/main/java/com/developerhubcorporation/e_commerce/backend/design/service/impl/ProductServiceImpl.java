@@ -1,16 +1,18 @@
 package com.developerhubcorporation.e_commerce.backend.design.service.impl;
 
+import com.developerhubcorporation.e_commerce.backend.design.exceptoin.dto.ResourceNotFoundException;
 import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import com.developerhubcorporation.e_commerce.backend.design.repository.ProductRepository;
 import com.developerhubcorporation.e_commerce.backend.design.service.ProductService;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -21,7 +23,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepo;
 
     @Override
-    @Transactional // manages database transaction boundaries for writes
+     @Transactional// manages database transaction boundaries for writes
     public Product save(Product product) {
         log.info("Saving new product to database: {}",  product.getName());
 
@@ -29,13 +31,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-
+    @Transactional(readOnly = true) // Optimizes memory/speed for database reads
     public Product getById(Long id) {
-        Product product = productRepo.findById(id).orElse(null);
-        if(product == null){
-            throw new EntityNotFoundException("Product not found");
-        }
-        return product;
+        log.debug("Fetching product by ID: {}", id);
+
+        // Replaced generic EntityNotFoundException with your custom ResourceNotFoundException
+        return productRepo.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Product with ID {} not found", id);
+                    return new ResourceNotFoundException("Product not found with id: " + id);
+                });
     }
 
     @Override
