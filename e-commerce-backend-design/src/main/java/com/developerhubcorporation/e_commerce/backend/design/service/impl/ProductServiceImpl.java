@@ -35,7 +35,7 @@ public class ProductServiceImpl implements ProductService {
     public Product getById(Long id) {
         log.debug("Fetching product by ID: {}", id);
 
-        // Replaced generic EntityNotFoundException with your custom ResourceNotFoundException
+        // Replaced generic EntityNotFoundException with custom ResourceNotFoundException (class created)
         return productRepo.findById(id)
                 .orElseThrow(() -> {
                     log.error("Product with ID {} not found", id);
@@ -44,28 +44,34 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Product> findAll(Pageable pageable) {
+        log.debug("Fetching paginated products list from database");
         return productRepo.findAll(pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Product> getFilteredProducts(String search, String category, int page, int size) {
+
+        log.info("Fetching products by search {}, category {}", search, category);
+
         Pageable  pageable = PageRequest.of(page, size);
 
-        // Check if search and category inputs actually have text
+        // Standardized validation logic using trim() safely
         boolean hasSearch = (search != null  && !search.trim().isEmpty());
         boolean hasCategory = (category != null && !category.trim().isEmpty());
 
         if (hasSearch &&  hasCategory){
-            return productRepo.findByNameContainingIgnoreCaseAndCategoryContainingIgnoreCase(search, category, pageable);
+            return productRepo.findByNameContainingIgnoreCaseAndCategoryContainingIgnoreCase(search.trim(), category.trim(), pageable);
         }
 
         else if (hasSearch){
-            return productRepo.findByNameContainingIgnoreCase(search, pageable);
+            return productRepo.findByNameContainingIgnoreCase(search.trim(), pageable);
         }
 
         else if (hasCategory){
-            return  productRepo.findByCategoryContainingIgnoreCase(category, pageable);
+            return  productRepo.findByCategoryContainingIgnoreCase(category.trim(), pageable);
         }
         else{
             return productRepo.findAll(pageable);
