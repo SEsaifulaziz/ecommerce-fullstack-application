@@ -1,6 +1,8 @@
 package com.developerhubcorporation.e_commerce.backend.design.controller;
 
 
+import com.developerhubcorporation.e_commerce.backend.design.dto.ProductRequestDTO;
+import com.developerhubcorporation.e_commerce.backend.design.dto.ProductResponseDTO;
 import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import com.developerhubcorporation.e_commerce.backend.design.service.ProductService;
 import jakarta.validation.Valid;
@@ -22,17 +24,19 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping()
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
-        log.info("REST request to save Product : {}", product.getName());
-        Product savedProduct = productService.save(product);
-        return new ResponseEntity<>(savedProduct,HttpStatus.CREATED);
+    public ResponseEntity<ProductResponseDTO> createProduct(
+            @Valid @RequestBody ProductRequestDTO dto) {
+
+        log.info("REST request to save Product : {}", dto.getName());
+
+        return new ResponseEntity<>(productService.save(dto),HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
         log.info("REST request to get Product by ID : {}", id);
-        Product getById = productService.getById(id);
-        return ResponseEntity.ok().body(getById);
+
+        return ResponseEntity.ok().body(productService.getById(id));
     }
 
     @GetMapping()
