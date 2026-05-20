@@ -40,6 +40,7 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        log.info("REST request to get a paginated list of Products");
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(productService.findAll(pageable));
     }
