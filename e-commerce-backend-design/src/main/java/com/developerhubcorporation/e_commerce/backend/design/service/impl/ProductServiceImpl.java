@@ -62,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Product> getFilteredProducts(String search, String category, int page, int size) {
+    public Page<ProductResponseDTO> getFilteredProducts(String search, String category, int page, int size) {
 
         log.info("Fetching products by search {}, category {}", search, category);
 
@@ -72,19 +72,23 @@ public class ProductServiceImpl implements ProductService {
         boolean hasSearch = (search != null  && !search.trim().isEmpty());
         boolean hasCategory = (category != null && !category.trim().isEmpty());
 
+        Page<Product> productPage;
+
         if (hasSearch &&  hasCategory){
-            return productRepo.findByNameContainingIgnoreCaseAndCategoryContainingIgnoreCase(search.trim(), category.trim(), pageable);
+            productPage = productRepo.findByNameContainingIgnoreCaseAndCategoryContainingIgnoreCase(search.trim(), category.trim(), pageable);
         }
 
         else if (hasSearch){
-            return productRepo.findByNameContainingIgnoreCase(search.trim(), pageable);
+            productPage = productRepo.findByNameContainingIgnoreCase(search.trim(), pageable);
         }
 
         else if (hasCategory){
-            return  productRepo.findByCategoryContainingIgnoreCase(category.trim(), pageable);
+            productPage = productRepo.findByCategoryContainingIgnoreCase(category.trim(), pageable);
         }
         else{
-            return productRepo.findAll(pageable);
+            productPage =  productRepo.findAll(pageable);
         }
+
+        return productPage.map(productMapper::toResponseDTO);
     }
 }
