@@ -1,6 +1,6 @@
 package com.developerhubcorporation.e_commerce.backend.design.service.impl;
 
-import com.developerhubcorporation.e_commerce.backend.design.exceptoin.dto.ResourceNotFoundException;
+import com.developerhubcorporation.e_commerce.backend.design.exception.ResourceNotFoundException;
 import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import com.developerhubcorporation.e_commerce.backend.design.repository.ProductRepository;
 import com.developerhubcorporation.e_commerce.backend.design.service.ProductService;
