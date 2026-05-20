@@ -52,6 +52,7 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "0")  int page,
             @RequestParam(required = false, defaultValue = "10") int size
     ) {
+        log.info("REST request to filter Products - Search: {}, category: {}", search, category);
         Page<Product> FilteredProducts = productService.getFilteredProducts(search, category, page, size);
         return ResponseEntity.ok().body(FilteredProducts);
     }
