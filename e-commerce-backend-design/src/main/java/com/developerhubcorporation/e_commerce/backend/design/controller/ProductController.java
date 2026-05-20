@@ -2,15 +2,18 @@ package com.developerhubcorporation.e_commerce.backend.design.controller;
 
 
 import com.developerhubcorporation.e_commerce.backend.design.model.Product;
-import com.developerhubcorporation.e_commerce.backend.design.repository.ProductRepository;
 import com.developerhubcorporation.e_commerce.backend.design.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
@@ -19,9 +22,10 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping()
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
+        log.info("REST request to save Product : {}", product.getName());
         Product savedProduct = productService.save(product);
-        return ResponseEntity.ok().body(savedProduct);
+        return new ResponseEntity<>(savedProduct,HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
