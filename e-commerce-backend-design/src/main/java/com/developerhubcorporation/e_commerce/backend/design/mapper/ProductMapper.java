@@ -1,6 +1,7 @@
 package com.developerhubcorporation.e_commerce.backend.design.mapper;
 
 import com.developerhubcorporation.e_commerce.backend.design.dto.ProductRequestDTO;
+import com.developerhubcorporation.e_commerce.backend.design.dto.ProductResponseDTO;
 import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import org.mapstruct.Mapper;
 
@@ -11,5 +12,5 @@ public interface ProductMapper {
 
     Product toEntity(ProductRequestDTO dto);
 
-    ProductRequestDTO toResponseDTO(Product product);
+    ProductResponseDTO toResponseDTO(Product product);
 }
