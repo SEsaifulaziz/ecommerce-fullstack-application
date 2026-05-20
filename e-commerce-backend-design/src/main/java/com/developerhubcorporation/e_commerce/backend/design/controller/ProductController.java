@@ -40,7 +40,7 @@ public class ProductController {
     }
 
     @GetMapping()
-    public ResponseEntity<Page<Product>> getAllProducts(
+    public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
