@@ -1,6 +1,9 @@
 package com.developerhubcorporation.e_commerce.backend.design.service.impl;
 
+import com.developerhubcorporation.e_commerce.backend.design.dto.ProductRequestDTO;
+import com.developerhubcorporation.e_commerce.backend.design.dto.ProductResponseDTO;
 import com.developerhubcorporation.e_commerce.backend.design.exception.ResourceNotFoundException;
+import com.developerhubcorporation.e_commerce.backend.design.mapper.ProductMapper;
 import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import com.developerhubcorporation.e_commerce.backend.design.repository.ProductRepository;
 import com.developerhubcorporation.e_commerce.backend.design.service.ProductService;
@@ -21,22 +24,28 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepo;
+    private final ProductMapper productMapper;
 
     @Override
      @Transactional// manages database transaction boundaries for writes
-    public Product save(Product product) {
-        log.info("Saving new product to database: {}",  product.getName());
+    public ProductResponseDTO save(ProductRequestDTO dto) {
+        log.info("Saving new product to database: {}",  dto.getName());
 
-        return productRepo.save(product);
+        Product product = productMapper.toEntity(dto);
+        Product savedProduct = productRepo.save(product);
+
+        log.info("Product successfully persisted with generated ID: {}", savedProduct.getId());
+        return productMapper.toResponseDTO(savedProduct);
     }
 
     @Override
     @Transactional(readOnly = true) // Optimizes memory/speed for database reads
-    public Product getById(Long id) {
+    public ProductResponseDTO getById(Long id) {
         log.debug("Fetching product by ID: {}", id);
 
         // Replaced generic EntityNotFoundException with custom ResourceNotFoundException (class created)
         return productRepo.findById(id)
+                .map(productMapper::toResponseDTO)
                 .orElseThrow(() -> {
                     log.error("Product with ID {} not found", id);
                     return new ResourceNotFoundException("Product not found with id: " + id);
