@@ -1,6 +1,6 @@
 package com.developerhubcorporation.e_commerce.backend.design.dto;
 
-import com.developerhubcorporation.e_commerce.backend.design.model.Product;
+
 import lombok.Data;
 
 @Data
