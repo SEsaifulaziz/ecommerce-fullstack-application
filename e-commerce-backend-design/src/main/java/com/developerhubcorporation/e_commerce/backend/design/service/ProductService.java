@@ -9,9 +9,9 @@ import org.springframework.data.domain.Pageable;
 public interface ProductService {
     ProductResponseDTO save(ProductRequestDTO product);
 
-    Product getById(Long id);
+    ProductResponseDTO getById(Long id);
 
-    Page<Product> findAll(Pageable pageable);
+    Page<ProductResponseDTO> findAll(Pageable pageable);
 
-    Page<Product> getFilteredProducts(String search, String category, int page, int size);
+    Page<ProductResponseDTO> getFilteredProducts(String search, String category, int page, int size);
 }
