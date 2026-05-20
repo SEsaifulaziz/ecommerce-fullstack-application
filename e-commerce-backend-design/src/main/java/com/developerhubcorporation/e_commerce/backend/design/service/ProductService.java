@@ -1,11 +1,13 @@
 package com.developerhubcorporation.e_commerce.backend.design.service;
 
+import com.developerhubcorporation.e_commerce.backend.design.dto.ProductRequestDTO;
+import com.developerhubcorporation.e_commerce.backend.design.dto.ProductResponseDTO;
 import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
-    Product save(Product product);
+    ProductResponseDTO save(ProductRequestDTO product);
 
     Product getById(Long id);
 
