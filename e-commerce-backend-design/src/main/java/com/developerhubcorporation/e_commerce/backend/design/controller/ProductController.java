@@ -30,6 +30,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        log.info("REST request to get Product by ID : {}", id);
         Product getById = productService.getById(id);
         return ResponseEntity.ok().body(getById);
     }
