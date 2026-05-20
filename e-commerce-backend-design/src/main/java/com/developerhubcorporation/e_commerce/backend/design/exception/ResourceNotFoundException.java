@@ -1,4 +1,4 @@
-package com.developerhubcorporation.e_commerce.backend.design.exceptoin.dto;
+package com.developerhubcorporation.e_commerce.backend.design.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
