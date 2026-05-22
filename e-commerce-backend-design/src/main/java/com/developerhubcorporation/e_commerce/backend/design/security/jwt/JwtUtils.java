@@ -1,8 +1,7 @@
 package com.developerhubcorporation.e_commerce.backend.design.security.jwt;
 
 import com.developerhubcorporation.e_commerce.backend.design.security.UserDetailsImpl;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -40,5 +39,23 @@ public class JwtUtils {
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    //Validate Token authenticity and expiration boundaries
+    public boolean validateJwtToken(String authToken) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
+            return true;
+        } catch(MalformedJwtException ex){
+            log.error("Invalid JWT token format: {}",  ex.getMessage());
+        } catch(ExpiredJwtException ex){
+            log.error("Expired JWT token format: {}", ex.getMessage());
+        } catch(UnsupportedJwtException ex){
+            log.error("JWT token has expired: {}",  ex.getMessage());
+        } catch(IllegalArgumentException ex){
+            log.error("JWT claims string is empty or blank: {}", ex.getMessage());
+        }
+        return false;
     }
 }
