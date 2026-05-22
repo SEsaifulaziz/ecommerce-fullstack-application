@@ -29,9 +29,9 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+            name = "user_roles", // Names the new bridge table
+            joinColumns = @JoinColumn(name = "user_id"), // Creates the Foreign Key column pointing back to the users table
+            inverseJoinColumns = @JoinColumn(name = "role_id") // Creates the Foreign Key column pointing to the roles table
     )
     private Set<Role> roles = new  HashSet<>();
 
