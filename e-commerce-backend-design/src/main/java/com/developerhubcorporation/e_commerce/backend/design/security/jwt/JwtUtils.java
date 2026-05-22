@@ -16,10 +16,10 @@ import java.util.Date;
 @Slf4j
 public class JwtUtils {
 
-    @Value("${ecommerce.app.jwtSecretKey}")
+    @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${ecommerce.app.jwtExpirationMs}")
+    @Value("${app.jwt.expiration.ms}")
     private int jwtExpirationMs;
 
     // Generate JWT Token for an authenticated user
