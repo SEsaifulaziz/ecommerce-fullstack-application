@@ -3,8 +3,8 @@ package com.developerhubcorporation.e_commerce.backend.design.dto;
 import com.developerhubcorporation.e_commerce.backend.design.model.Role;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Data
 public class JwtResponseDTO {
@@ -13,15 +13,15 @@ public class JwtResponseDTO {
     private Long id;
     private String username;
     private String email;
-    private Set<Role> roles;
+    private List<String> roles;
 
 
-    public JwtResponseDTO(String token, Long id,
+    public JwtResponseDTO(String accessToken, Long id,
                           String username,
                           String email,
-                          Set<Role> roles) {
-        
-        this.token = token;
+                          List<String> roles) {
+
+        this.token = accessToken;
         this.id = id;
         this.username = username;
         this.email = email;
