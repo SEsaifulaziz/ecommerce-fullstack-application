@@ -41,6 +41,16 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    // Extract username from the verified token string
+    public String getUserNameFromJwtToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
     //Validate Token authenticity and expiration boundaries
     public boolean validateJwtToken(String authToken) {
         try {
