@@ -65,7 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // Allow anyone to attempt to read or query products (Customers browsing the shop)
-                        .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
 
                         // Any other request (like updating, adding, or deleting products) requires a valid user login
                         .anyRequest().authenticated()
