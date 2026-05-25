@@ -11,8 +11,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry){
         registry.addMapping("/**")
                 .allowedOrigins(
+                        "Http://lovalhost:5173",
                         "http://localhost:3000", // Allows  to test locally via React
-                        "https://your-friends-frontend-url.vercel.app" // frontend future live URL
+                        "https://frontend-url.vercel.app" // frontend future live URL
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
