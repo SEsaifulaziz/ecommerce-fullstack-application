@@ -62,10 +62,10 @@ public class SecurityConfig {
                 // Define API route visibility permission
                 .authorizeHttpRequests(auth -> auth
                         // Allow anyone to attempt registration or login operations
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
 
                         // Allow anyone to attempt to read or query products (Customers browsing the shop)
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
 
                         // Any other request (like updating, adding, or deleting products) requires a valid user login
                         .anyRequest().authenticated()
