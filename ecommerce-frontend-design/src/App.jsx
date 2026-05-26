@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Deals from './components/Deals';
@@ -15,60 +15,77 @@ import Cart from './components/Cart';
 import Profile from './components/Profile';
 import Messages from './components/Messages';
 import Orders from './components/Orders';
+import { fetchProducts } from './api/products';
+import { useApp } from './context/AppContext';
+import { getProductImage } from './utils/productImage';
 
-// Category Banner Images
 import homeBanner from './assets/Image/backgrounds/image 98.png';
 import electronicsBanner from './assets/Image/backgrounds/image 106.png';
 
-// Home and Outdoor Images
-import itemH1 from './assets/Image/interior/1.png';
-import itemH2 from './assets/Image/interior/3.png';
-import itemH3 from './assets/Image/interior/6.png';
-import itemH4 from './assets/Image/interior/7.png';
-import itemH5 from './assets/Image/interior/8.png';
-import itemH6 from './assets/Image/interior/9.png';
-import itemH7 from './assets/Image/interior/image 89.png';
-import itemH8 from './assets/Image/interior/image 93.png';
-
-// Electronics Images
-import itemE1 from './assets/Image/tech/8.png';
-import itemE2 from './assets/Image/tech/image 85.png';
-import itemE3 from './assets/Image/tech/image 32.png';
-import itemE4 from './assets/Image/tech/image 33.png';
-import itemE5 from './assets/Image/tech/image 34.png';
-import itemE6 from './assets/Image/tech/image 23.png';
-import itemE7 from './assets/Image/tech/image 86.png';
-import itemE8 from './assets/Image/tech/6.png';
+function mapProductsToCategoryItems(products) {
+  return products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: getProductImage(product.image),
+  }));
+}
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [homeProducts, setHomeProducts] = useState([]);
+  const [electronicsProducts, setElectronicsProducts] = useState([]);
+  const [homeLoading, setHomeLoading] = useState(true);
+  const [homeError, setHomeError] = useState('');
+  const { openProduct } = useApp();
 
-  const homeAndOutdoorItems = [
-    { name: "Soft chairs", price: "19", image: itemH1 },
-    { name: "Sofa & chair", price: "19", image: itemH2 },
-    { name: "Kitchen dishes", price: "19", image: itemH3 },
-    { name: "Smart watches", price: "19", image: itemH4 },
-    { name: "Kitchen mixer", price: "100", image: itemH5 },
-    { name: "Blenders", price: "39", image: itemH6 },
-    { name: "Home appliance", price: "19", image: itemH7 },
-    { name: "Coffee maker", price: "10", image: itemH8 },
-  ];
+  useEffect(() => {
+    let cancelled = false;
 
-  const electronicsItems = [
-    { name: "Smart watches", price: "19", image: itemE1 },
-    { name: "Cameras", price: "89", image: itemE2 },
-    { name: "Headphones", price: "10", image: itemE3 },
-    { name: "Smartphones", price: "19", image: itemE4 },
-    { name: "Gaming set", price: "35", image: itemE5 },
-    { name: "Laptop & PC", price: "340", image: itemE6 },
-    { name: "Smartphones", price: "19", image: itemE7 },
-    { name: "Electric kettle", price: "240", image: itemE8 },
-  ];
+    async function loadHomeProducts() {
+      setHomeLoading(true);
+      setHomeError('');
+      try {
+        const page = await fetchProducts(0, 50);
+        const all = page.content || [];
+        if (cancelled) return;
+
+        const electronics = all.filter((p) =>
+          (p.category || '').toLowerCase().includes('electronic')
+        );
+        const homeAndOutdoor = all.filter(
+          (p) => !(p.category || '').toLowerCase().includes('electronic')
+        );
+
+        setElectronicsProducts(mapProductsToCategoryItems(electronics.slice(0, 8)));
+        setHomeProducts(mapProductsToCategoryItems(homeAndOutdoor.slice(0, 8)));
+      } catch {
+        if (!cancelled) {
+          setHomeError('Could not load products from the server. Check VITE_API_BASE_URL in .env');
+        }
+      } finally {
+        if (!cancelled) setHomeLoading(false);
+      }
+    }
+
+    loadHomeProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleProductSelect = useCallback(
+    (productId) => {
+      openProduct(productId);
+      setCurrentPage('details');
+    },
+    [openProduct]
+  );
 
   const renderContent = () => {
     switch (currentPage) {
       case 'listing':
-        return <ProductListing setPage={setCurrentPage} />;
+        return <ProductListing setPage={setCurrentPage} onProductSelect={handleProductSelect} />;
       case 'details':
         return <ProductDetails setPage={setCurrentPage} />;
       case 'cart':
@@ -85,24 +102,38 @@ function App() {
             <Hero />
             <Deals />
 
-            <CategorySection
-              title="Home and outdoor"
-              bannerBg="#FFE6BF"
-              bannerImg={homeBanner}
-              items={homeAndOutdoorItems}
-              setPage={setCurrentPage}
-            />
+            {homeError && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                {homeError}
+              </div>
+            )}
 
-            <CategorySection
-              title="Consumer electronics"
-              bannerBg="#E5F1FF"
-              bannerImg={electronicsBanner}
-              items={electronicsItems}
-              setPage={setCurrentPage}
-            />
+            {homeLoading ? (
+              <p className="text-center text-[#8B96A5] py-10">Loading products from server...</p>
+            ) : (
+              <>
+                <CategorySection
+                  title="Home and outdoor"
+                  bannerBg="#FFE6BF"
+                  bannerImg={homeBanner}
+                  items={homeProducts}
+                  setPage={setCurrentPage}
+                  onProductSelect={handleProductSelect}
+                />
+
+                <CategorySection
+                  title="Consumer electronics"
+                  bannerBg="#E5F1FF"
+                  bannerImg={electronicsBanner}
+                  items={electronicsProducts}
+                  setPage={setCurrentPage}
+                  onProductSelect={handleProductSelect}
+                />
+              </>
+            )}
 
             <InquiryForm />
-            <RecommendedItems setPage={setCurrentPage} />
+            <RecommendedItems onProductSelect={handleProductSelect} />
             <Services />
             <RegionSuppliers />
           </div>
@@ -114,9 +145,7 @@ function App() {
     <div className="min-h-screen flex flex-col">
       <Header setPage={setCurrentPage} />
 
-      <main className="flex-grow pb-12">
-        {renderContent()}
-      </main>
+      <main className="flex-grow pb-12">{renderContent()}</main>
 
       <Newsletter />
       <Footer />
@@ -125,4 +154,3 @@ function App() {
 }
 
 export default App;
-
