@@ -95,19 +95,14 @@ public class AuthController {
         } else {
             strRoles.forEach(role -> {
 
-                //defensive cleaning: convert to lower case and completely strip accidental spaces
-                String cleanedRole = role.trim().toLowerCase();
-
-                switch (cleanedRole) {
-                    case "admin":
-                        Role adminRole = roleRepo.findByName("ROLE_ADMIN")
-                                .orElseThrow(() -> new RuntimeException("Error: Role 'ROLE_ADMIN' is not initialized in the database."));
-                        roles.add(adminRole);
-                        break;
-                    default:
-                        Role userRole = roleRepo.findByName("ROLE_USER")
-                                .orElseThrow(() -> new RuntimeException("Error: Role 'ROLE_USER' is not initialized int the database."));
-                        roles.add(userRole);
+                if (role.equalsIgnoreCase("admin")) {
+                    Role adminRole = roleRepo.findByName("ROLE_ADMIN")
+                            .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
+                    roles.add(adminRole);
+                } else {
+                    Role userRole = roleRepo.findByName("ROLE_USER")
+                            .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
+                    roles.add(userRole);
                 }
             });
         }
