@@ -2,13 +2,13 @@
 
 A production-ready, full-stack B2B E-Commerce marketplace built using a decoupled monorepo architecture. The application features a robust relational database backend powered by Java and Spring Boot, seamlessly integrated with a highly responsive, modern React dashboard frontend.
 
-## 🚀 Live Deployments
+## Live Deployments
 * **Frontend Dashboard (Vercel):** `https://your-app-name.vercel.app`
 * **Backend API Gateway (Render):** `https://ecommerce-fullstack-application-d4lk.onrender.com`
 
 ---
 
-## 🏗️ Architecture & Project Structure
+## Architecture & Project Structure
 The repository is managed as a clean monorepo, cleanly separating core concerns between client-side rendering and server-side business logic:
 
 ```text
@@ -59,8 +59,10 @@ with automated zero-match fallbacks.
 ### Running the Backend
 1. Navigate to the backend subdirectory:
    - cd e-commerce-backend-design
+    
 2. Configure your environment properties inside IntelliJ or
  your native terminal wrapper (DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, APP_CORS_ALLOWED_ORIGINS).
+
 3. Compile and boot the application:
    ./mvnw spring-boot:run
 
@@ -72,7 +74,7 @@ with automated zero-match fallbacks.
    - npm install
 
 3. Boot up the local development network node:
-   npm run dev
+   - npm run dev
 
 
 ## Author
