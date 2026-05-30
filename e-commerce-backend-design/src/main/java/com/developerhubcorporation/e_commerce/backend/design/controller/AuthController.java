@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,15 +39,15 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
+    // -------------------------------------------------------------------------
+    // POST /api/v1/auth/login
+    // -------------------------------------------------------------------------
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<JwtResponseDTO> authenticateUser(@Valid @RequestBody LoginRequestDTO dto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequestDTO.getUsername(),
-                        loginRequestDTO.getPassword()));
+                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
         String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -54,37 +55,62 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponseDTO(
-                jwt,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                userDetails.getEmail(),
-                roles));
+        log.info("User '{}' logged in successfully", userDetails.getUsername());
+        return ResponseEntity.ok(new JwtResponseDTO(jwt, userDetails.getId(),
+                userDetails.getUsername(), userDetails.getEmail(), roles));
     }
 
+    // -------------------------------------------------------------------------
+    // POST /api/v1/auth/register
+    // FIX: Returns a JwtResponseDTO directly — no need for the frontend to call
+    //      login() as a second round-trip after a successful registration.
+    // -------------------------------------------------------------------------
     @PostMapping("/register")
     @Transactional
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestsDTO signupRequestsDTO) {
-        if (userRepo.existsByUsername(signupRequestsDTO.getUsername())) {
-            return ResponseEntity.badRequest().body("Error: Username is already taken!");
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestsDTO dto) {
+        if (userRepo.existsByUsername(dto.getUsername())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Username is already taken."));
         }
-
-        if (userRepo.existsByEmail(signupRequestsDTO.getEmail())) {
-            return ResponseEntity.badRequest().body("Error: Email is already in use!");
+        if (userRepo.existsByEmail(dto.getEmail())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is already in use."));
         }
 
         User user = new User();
-        user.setUsername(signupRequestsDTO.getUsername());
-        user.setEmail(signupRequestsDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(signupRequestsDTO.getPassword()));
-        user.setRoles(resolveRoles(signupRequestsDTO.getRole()));
-
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRoles(resolveRoles(dto.getRole()));
         userRepo.save(user);
-        log.info("Registered user: {}", user.getUsername());
 
-        return ResponseEntity.ok("User registered successfully!");
+        log.info("New user registered: {}", user.getUsername());
+
+        // Auto-login after registration — returns the JWT immediately
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponseDTO(jwt, userDetails.getId(),
+                userDetails.getUsername(), userDetails.getEmail(), roles));
     }
 
+    // -------------------------------------------------------------------------
+    // POST /api/v1/auth/logout  (stateless signal — client must discard token)
+    // -------------------------------------------------------------------------
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logoutUser() {
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully."));
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
     private Set<Role> resolveRoles(Set<String> requestedRoles) {
         Set<Role> roles = new HashSet<>();
 
@@ -94,13 +120,10 @@ public class AuthController {
         }
 
         for (String roleValue : requestedRoles) {
-            if (roleValue == null || roleValue.isBlank()) {
-                continue;
-            }
+            if (roleValue == null || roleValue.isBlank()) continue;
 
-            String cleaned = roleValue.trim().toLowerCase().replace("role_", "");
-
-            if (cleaned.equals("admin")) {
+            String normalized = roleValue.trim().toUpperCase().replace("ROLE_", "");
+            if ("ADMIN".equals(normalized)) {
                 roles.add(getOrCreateRole("ROLE_ADMIN"));
             } else {
                 roles.add(getOrCreateRole("ROLE_USER"));
@@ -110,15 +133,13 @@ public class AuthController {
         if (roles.isEmpty()) {
             roles.add(getOrCreateRole("ROLE_USER"));
         }
-
         return roles;
     }
 
     private Role getOrCreateRole(String roleName) {
-        return roleRepo.findByName(roleName)
-                .orElseGet(() -> {
-                    log.info("Creating missing role: {}", roleName);
-                    return roleRepo.save(new Role(roleName));
-                });
+        return roleRepo.findByName(roleName).orElseGet(() -> {
+            log.warn("Role '{}' not found in DB — creating it now. Check DatabaseSeeder.", roleName);
+            return roleRepo.save(new Role(roleName));
+        });
     }
 }
