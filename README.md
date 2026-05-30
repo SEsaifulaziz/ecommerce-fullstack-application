@@ -3,8 +3,8 @@
 A production-ready, full-stack B2B E-Commerce marketplace built using a decoupled monorepo architecture. The application features a robust relational database backend powered by Java and Spring Boot, seamlessly integrated with a highly responsive, modern React dashboard frontend.
 
 ## Live Deployments
-* **Frontend Dashboard (Vercel):** https://your-app-name.vercel.app
-* **Backend API Gateway (Render):** https://ecommerce-fullstack-application-d4lk.onrender.com
+* **Frontend Dashboard (Vercel):** https://ecommerce-fullstack-application.vercel.app/
+* **Backend API Gateway (Render):** https://ecommerce-fullstack-application-d4lk.onrender.com/
 
 ---
 
