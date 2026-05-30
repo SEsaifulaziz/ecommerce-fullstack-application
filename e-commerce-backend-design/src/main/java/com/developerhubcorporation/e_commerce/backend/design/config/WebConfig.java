@@ -6,14 +6,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
+public class WebConfig {
 
     @Value("${APP_CORS_ALLOWED_ORIGINS}")
     private String allowedOriginsRaw;
@@ -27,9 +27,14 @@ public class WebConfig implements WebMvcConfigurer {
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        // Expose Authorization header so the frontend can read it if needed
+        configuration.setExposedHeaders(List.of("Authorization"));
+        // Keep false — JWT is sent in Authorization header, not in cookies
         configuration.setAllowCredentials(false);
+        // Cache pre-flight response for 30 minutes to reduce OPTIONS overhead
+        configuration.setMaxAge(1800L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
