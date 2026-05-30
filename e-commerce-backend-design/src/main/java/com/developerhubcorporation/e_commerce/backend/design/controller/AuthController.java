@@ -11,12 +11,14 @@ import com.developerhubcorporation.e_commerce.backend.design.security.UserDetail
 import com.developerhubcorporation.e_commerce.backend.design.security.jwt.JwtUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -24,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*", maxAge = 3600) // Allow frontend React app to communicate with this controller safely
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -36,27 +38,24 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    //user sign-in endpoint
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
-
-        //Authenticate the user credentials using spring's core manager
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
+                new UsernamePasswordAuthenticationToken(
+                        loginRequestDTO.getUsername(),
+                        loginRequestDTO.getPassword()));
 
-        //set the current authentication context thread
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        //generate a crisp JWT security token string
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        // get user profile details to send back to the frontend dashboard configuration
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponseDTO(jwt,
+        return ResponseEntity.ok(new JwtResponseDTO(
+                jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
@@ -64,52 +63,62 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestsDTO signupRequestsDTO){
-
-        //Validation check: ensure username is unique
-        if(userRepo.existsByUsername(signupRequestsDTO.getUsername())){
+    @Transactional
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestsDTO signupRequestsDTO) {
+        if (userRepo.existsByUsername(signupRequestsDTO.getUsername())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
 
-        // validation check: ensure email is unique
-        if(userRepo.existsByEmail(signupRequestsDTO.getEmail())){
+        if (userRepo.existsByEmail(signupRequestsDTO.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         }
 
-        // create a new user raw object
         User user = new User();
         user.setUsername(signupRequestsDTO.getUsername());
         user.setEmail(signupRequestsDTO.getEmail());
-
-        // cryptographically scramble the plain text password before persistent saving
         user.setPassword(passwordEncoder.encode(signupRequestsDTO.getPassword()));
+        user.setRoles(resolveRoles(signupRequestsDTO.getRole()));
 
-        Set<String> strRoles = signupRequestsDTO.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if(strRoles == null){
-            //default rule: if no role is required, assign standard user level permissions
-            Role userRole = roleRepo.findByName("ROLE_USER")
-                    .orElseThrow(() -> new RuntimeException("Error: Role 'ROLE_USER' is not initialized in the database."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-
-                if (role.equalsIgnoreCase("admin")) {
-                    Role adminRole = roleRepo.findByName("ROLE_ADMIN")
-                            .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
-                    roles.add(adminRole);
-                } else {
-                    Role userRole = roleRepo.findByName("ROLE_USER")
-                            .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
-                    roles.add(userRole);
-                }
-            });
-        }
-        user.setRoles(roles);
         userRepo.save(user);
+        log.info("Registered user: {}", user.getUsername());
 
         return ResponseEntity.ok("User registered successfully!");
     }
 
+    private Set<Role> resolveRoles(Set<String> requestedRoles) {
+        Set<Role> roles = new HashSet<>();
+
+        if (requestedRoles == null || requestedRoles.isEmpty()) {
+            roles.add(getOrCreateRole("ROLE_USER"));
+            return roles;
+        }
+
+        for (String roleValue : requestedRoles) {
+            if (roleValue == null || roleValue.isBlank()) {
+                continue;
+            }
+
+            String cleaned = roleValue.trim().toLowerCase().replace("role_", "");
+
+            if (cleaned.equals("admin")) {
+                roles.add(getOrCreateRole("ROLE_ADMIN"));
+            } else {
+                roles.add(getOrCreateRole("ROLE_USER"));
+            }
+        }
+
+        if (roles.isEmpty()) {
+            roles.add(getOrCreateRole("ROLE_USER"));
+        }
+
+        return roles;
+    }
+
+    private Role getOrCreateRole(String roleName) {
+        return roleRepo.findByName(roleName)
+                .orElseGet(() -> {
+                    log.info("Creating missing role: {}", roleName);
+                    return roleRepo.save(new Role(roleName));
+                });
+    }
 }
