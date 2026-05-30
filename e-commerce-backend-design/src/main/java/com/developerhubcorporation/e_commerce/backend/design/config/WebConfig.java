@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.cors.allowed-origins}")
+    @Value("${APP_CORS_ALLOWED_ORIGINS}")
     private String allowedOriginsRaw;
 
     @Bean
