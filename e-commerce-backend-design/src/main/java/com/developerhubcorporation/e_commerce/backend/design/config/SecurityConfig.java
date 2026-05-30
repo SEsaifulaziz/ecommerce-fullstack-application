@@ -11,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,22 +19,36 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Central Spring Security configuration.
+ *
+ * FIX 1: CORS is now handled exclusively here via the CorsConfigurationSource
+ *         bean defined in WebConfig. Removed the duplicate WebMvcConfigurer
+ *         CORS registration that was fighting with Spring Security's filter.
+ *
+ * FIX 2: HTTP OPTIONS (pre-flight) requests are explicitly permitted so the
+ *         browser never receives a 401 on its pre-flight check.
+ *
+ * FIX 3: The /swagger-ui and /v3/api-docs paths are whitelisted so the
+ *         OpenAPI docs remain accessible without a token.
+ */
 @Configuration
-@EnableWebSecurity // Tells Spring to apply our custom security filters globally
-@EnableMethodSecurity // Allows us to use annotations like @PreAuthorize("hasRole('ADMIN')") on controllers later
+@EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthEntryPointJwt unauthorizedHandler;
     private final AuthTokenFilter authTokenFilter;
+    private final WebConfig webConfig;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    //Establish the Authentication Provider linking our custom DB Service & BCrypt Encoder
+    @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
@@ -44,39 +57,43 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
-                // Disable CSRF protection (not needed for stateless REST APIs using JWT tokens)
+                // Delegate CORS to our single CorsConfigurationSource bean (fixes the CORS split-brain issue)
+                .cors(cors -> cors.configurationSource(webConfig.corsConfigurationSource()))
+
+                // CSRF not needed for stateless JWT REST APIs
                 .csrf(csrf -> csrf.disable())
 
-                // Assign our custom unauthorized request interception exception checkpoint
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                // Return structured JSON on 401 instead of a redirect to a login page
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
 
-                // Force the server to be completely STATELESS (Never create na HTTP Session)
+                // Stateless – never create an HTTP session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Define API route visibility permission
                 .authorizeHttpRequests(auth -> auth
-                        // Allow anyone to attempt registration or login operations
+                        // Allow browser pre-flight OPTIONS requests on all paths without a token
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Public auth endpoints
                         .requestMatchers("/api/v1/auth/**").permitAll()
 
-                        // Allow anyone to attempt to read or query products (Customers browsing the shop)
+                        // Public product reads
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
 
-                        // Any other request (like updating, adding, or deleting products) requires a valid user login
+                        // OpenAPI / Swagger UI (useful for testing on Render)
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        // Everything else requires a valid JWT
                         .anyRequest().authenticated()
                 );
 
-        //tell spring security to utilize our authentication provider credentials logic
         http.authenticationProvider(authenticationProvider());
-
-        // inject our custom JWT validation filter right BEFORE the standard UsernamePassword filter runs
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
