@@ -12,3 +12,9 @@ backend/HELP.md
 # System files
 .DS_Store
 Thumbs.db
+
+# IDE specific configuration files
+.idea/
+.vscode
+*.iml
+git
