@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "products")
 @Data
@@ -27,7 +29,7 @@ public class Product {
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Price cannot be less then 0.0")
     @Column(nullable = false) // Use double or BigDecimal with explicit scale matching
-    private Double price;
+    private BigDecimal price;
 
     @NotNull(message = "Price is required")
     @Size(max = 50, message = "Category name cannot exceed 50 characters")
