@@ -4,7 +4,6 @@ import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import com.developerhubcorporation.e_commerce.backend.design.model.Role;
 import com.developerhubcorporation.e_commerce.backend.design.repository.ProductRepository;
 import com.developerhubcorporation.e_commerce.backend.design.repository.RoleRepository;
-import com.developerhubcorporation.e_commerce.backend.design.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
