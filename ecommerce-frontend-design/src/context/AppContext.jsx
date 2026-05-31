@@ -124,6 +124,8 @@ export function AppProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(selectedProductId);
+    localStorage.removeItem(selectedProduct);
     setUser(null);
     setCart([]); // Clear cart on logout for privacy
   }, []);
