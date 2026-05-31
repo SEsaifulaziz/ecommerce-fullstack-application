@@ -3,7 +3,6 @@ package com.developerhubcorporation.e_commerce.backend.design.controller;
 
 import com.developerhubcorporation.e_commerce.backend.design.dto.ProductRequestDTO;
 import com.developerhubcorporation.e_commerce.backend.design.dto.ProductResponseDTO;
-import com.developerhubcorporation.e_commerce.backend.design.model.Product;
 import com.developerhubcorporation.e_commerce.backend.design.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,21 +26,19 @@ public class ProductController {
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponseDTO> createProduct(
-            @Valid @RequestBody ProductRequestDTO dto) {
-
+            @Valid @RequestBody ProductRequestDTO dto
+    ) {
         log.info("REST request to save Product : {}", dto.getName());
-
         ProductResponseDTO savedProduct = productService.save(dto);
-
-        return ResponseEntity.ok().body(savedProduct);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponseDTO> getProductById(
+            @PathVariable Long id
+    ) {
         log.info("REST request to get Product by ID : {}", id);
-
         ProductResponseDTO getById = productService.getById(id);
-
         return ResponseEntity.ok().body(getById);
     }
 
@@ -63,8 +60,8 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "10") int size
     ) {
         log.info("REST request to filter Products - Search: {}, category: {}", search, category);
-        Page<ProductResponseDTO> FilteredProducts = productService.getFilteredProducts(search, category, page, size);
-        return ResponseEntity.ok().body(FilteredProducts);
+        Page<ProductResponseDTO> filteredProducts = productService.getFilteredProducts(search, category, page, size);
+        return ResponseEntity.ok().body(filteredProducts);
     }
 
 }
