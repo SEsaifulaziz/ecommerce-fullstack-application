@@ -14,13 +14,13 @@ Use your real Render URL with **no trailing slash**.
 
 On Render, set:
 
-| Variable | Example |
-|----------|---------|
-| `DB_URL` | JDBC MySQL URL |
-| `DB_USERNAME` | your user |
-| `DB_PASSWORD` | your password |
-| `JWT_SECRET` | long random string |
-| `FRONTEND_URL` | `http://localhost:5173` (for local testing) |
+| Variable | Example                                     |
+|----------|---------------------------------------------|
+| `DB_URL` | JDBC MySQL URL                              |
+| `DB_USERNAME` | your user                                   |
+| `DB_PASSWORD` | your password                               |
+| `JWT_SECRET` | long random string                          |
+| `FRONTEND_URL` | APP_CORS_ALLOWED_ORIGINS (for local Render) |
 
 After you deploy the frontend, add your live frontend URL to `FRONTEND_URL` (comma-separated if multiple).
 
