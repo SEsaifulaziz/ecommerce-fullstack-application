@@ -35,30 +35,46 @@ public class GlobalExceptionHandler {
           return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
-    // 2. Catch DTO Payload Validation Errors (HTTP 400)
+    // 409 Duplicate Resource (username / email already taken)
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorDetails> handleDuplicateResourceException(
+            DuplicateResourceException ex, WebRequest request
+    ){
+        log.warn("Duplicate resource conflict: {}", ex.getMessage());
+
+        ErrorDetails body = new ErrorDetails(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    // Catch DTO Payload Validation Errors (HTTP 400)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDetails> handleValidException(
             MethodArgumentNotValidException ex, WebRequest webRequest) {
-        Map<String, String> validationErrors = new HashMap<>();
+        Map<String, String> fieldErrors = new HashMap<>();
 
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
-            validationErrors.put(fieldName, errorMessage);
+            fieldErrors.put(fieldName, errorMessage);
 
-            log.warn("Payload validation failed on field [{}]: {}", fieldName, errorMessage);
+            log.warn("Payload validation failed — field [{}]: {}", fieldName, errorMessage);
         });
 
-        ErrorDetails errorDetails = new ErrorDetails(
+        ErrorDetails body = new ErrorDetails(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "Validation failed for incoming data parameters.",
+                "Request payload validation failed.",
                 webRequest.getDescription(false),
-                validationErrors
+                fieldErrors
         );
-
-        return new  ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return new  ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
 
@@ -67,16 +83,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorDetails> handleException(
             Exception exception, WebRequest webRequest) {
 
-        log.error("Unhandled systemic error intercepted: ", exception);
+        log.error("Unhandled exception: ", exception);
 
-        ErrorDetails errorDetails = new ErrorDetails(
+        ErrorDetails body = new ErrorDetails(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                "An unexpected internal error occurred on our server.",
+                "An unexpected internal error occurred .",
                 webRequest.getDescription(false)
         );
 
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
