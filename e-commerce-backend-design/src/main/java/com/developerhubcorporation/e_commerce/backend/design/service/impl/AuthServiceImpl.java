@@ -3,6 +3,7 @@ package com.developerhubcorporation.e_commerce.backend.design.service.impl;
 import com.developerhubcorporation.e_commerce.backend.design.dto.JwtResponseDTO;
 import com.developerhubcorporation.e_commerce.backend.design.dto.LoginRequestDTO;
 import com.developerhubcorporation.e_commerce.backend.design.dto.SignupRequestsDTO;
+import com.developerhubcorporation.e_commerce.backend.design.model.User;
 import com.developerhubcorporation.e_commerce.backend.design.repository.RoleRepository;
 import com.developerhubcorporation.e_commerce.backend.design.repository.UserRepository;
 import com.developerhubcorporation.e_commerce.backend.design.security.UserDetailsImpl;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,20 +35,32 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtils  jwtUtils;
 
     @Override
-    public JwtResponseDTO authenticateUser(LoginRequestDTO dto) {
+    public JwtResponseDTO login(LoginRequestDTO dto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword())
+        );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        log.info("User '{}' authenticated successfully", dto.getUsername());
+        return buildJwtResponse(authentication);
+    }
+
+    private JwtResponseDTO buildJwtResponse(Authentication authentication) {
         String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .toList();
+                .collect(Collectors.toList());
 
-        log.info("User '{}' logged in successfully", userDetails.getUsername());
-        return new JwtResponseDTO(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles);
+        return new JwtResponseDTO(
+                jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles
+        );
     }
 
     @Override
@@ -54,8 +68,4 @@ public class AuthServiceImpl implements AuthService {
         return null;
     }
 
-    @Override
-    public void logoutUser() {
-
-    }
 }
