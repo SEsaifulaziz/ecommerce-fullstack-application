@@ -62,7 +62,7 @@ with automated zero-match fallbacks.
     
 2. Configure your environment properties inside IntelliJ or
  your native terminal wrapper
-- (DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, APP_CORS_ALLOWED_ORIGINS).
+   - (DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, APP_CORS_ALLOWED_ORIGINS).
 
 4. Compile and boot the application:
    - ./mvnw spring-boot:run
