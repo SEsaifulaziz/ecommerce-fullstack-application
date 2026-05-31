@@ -19,7 +19,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Product name cannot be empty od blank") // Validation safeguard
+    @NotBlank(message = "Product name cannot be empty or blank") // Validation safeguard
     @Size(max = 150, message = "Product name cannot exceed 150 characters")
     @Column(nullable = false, length = 150) // Matches database constraint mapping
     private String name;
