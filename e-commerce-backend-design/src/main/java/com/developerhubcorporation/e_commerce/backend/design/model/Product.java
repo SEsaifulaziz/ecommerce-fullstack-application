@@ -29,15 +29,17 @@ public class Product {
     @Column(nullable = false) // Use double or BigDecimal with explicit scale matching
     private Double price;
 
-    @NotNull(message = "Price is required")
+    @NotBlank(message = "Price is required")
     @Size(max = 50, message = "Category name cannot exceed 50 characters")
     @Column(nullable = false, length = 50)
     private String category;
 
+    @NotBlank
     @Size(max = 1000,message = "Description cannot exceed 1000 characters")
     @Column(nullable = false, length = 1000)
     private String description;
 
+    @NotBlank
     @Size(max = 500, message = "Image URL string is too long")
     @Column(nullable = false, length = 500)
     private String image;
