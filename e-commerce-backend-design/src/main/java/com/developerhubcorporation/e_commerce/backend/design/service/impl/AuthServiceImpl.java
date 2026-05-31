@@ -142,7 +142,7 @@ public class AuthServiceImpl implements AuthService {
      */
     private Role fetchOrCreateRole(String roleName) {
         return roleRepo.findByName(roleName).orElseGet(() -> {
-            log.warn("Role '{}' was messing from the DB - creating it. Verify DatabaseSeeder ran correctly.", roleName);
+            log.warn("Role '{}' was missing from the DB - creating it. Verify DatabaseSeeder ran correctly.", roleName);
             return roleRepo.save(new Role(roleName));
         });
     }
