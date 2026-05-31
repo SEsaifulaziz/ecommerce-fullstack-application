@@ -9,7 +9,7 @@ const Header = ({ setPage }) => {
   const [localSearch, setLocalSearch] = useState('');
 
   const handleSearch = () => {
-    setSearchQuery(localSearch);
+    setSearchQuery(localSearch).trim();
     setCategoryFilter('');
     setPage('listing');
   };
