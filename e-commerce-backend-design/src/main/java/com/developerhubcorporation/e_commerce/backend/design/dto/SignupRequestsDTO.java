@@ -16,7 +16,9 @@ public class SignupRequestsDTO {
 
     @NotBlank(message = "Email cannot be blank")
     @Size(max = 50)
-    @Email(message = "Please provide a valid email address")
+    @Email(message = "Please provide a structurally valid email address (e.g user@gmail.com)",
+    regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$"
+    )
     private String email;
 
     @NotBlank(message = "Password cannot be blank")
