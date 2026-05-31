@@ -14,7 +14,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Step 2: Run stage
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:17-jre-alphine
 
 WORKDIR /app
 
